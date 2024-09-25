@@ -43,12 +43,16 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
                 detail="User already registered."
             )
 
+        print("User in DB >>>> ", user_in_db)
+
         hashed_password = await get_password_hash(user.password)
         db_user = User(
             full_name=user.full_name,
             email=user.email,
             hashed_password=hashed_password,
         )
+
+        print("db user >>> ", db_user)
 
         db.add(db_user)
         await db.commit()
