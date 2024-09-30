@@ -6,6 +6,13 @@ from db.connection import init_db
 
 
 def make_middleware() -> list[Middleware]:
+    """Creates a list containing a CORS middleware instance.
+    Parameters:
+        None
+    Returns:
+        - list[Middleware]: A list with a single Middleware instance configured for CORS.
+    Processing Logic:
+        - The created middleware allows all origins, credentials, methods, and headers for cross-origin resource sharing."""
     middleware = [
         Middleware(
             CORSMiddleware,
@@ -23,6 +30,13 @@ def init_routers(app_: FastAPI) -> None:
 
 
 def create_app() -> FastAPI:
+    """Creates and returns a FastAPI application instance with pre-configured settings.
+    Returns:
+        - FastAPI: The FastAPI application instance with routes and middleware set up.
+    Processing Logic:
+        - The application title, description, version, and middleware are configured at initialization.
+        - Routes are initialized through `init_routers`.
+        - The database is initialized asynchronously on the startup event of the application."""
     app_ = FastAPI(
         title="Auth",
         description="Authentication APIs",
