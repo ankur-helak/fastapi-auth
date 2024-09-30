@@ -5,8 +5,28 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth.schemas import TokenData
 from db.connection import get_db
 from config.settings import settings
-from auth.models import User
+from jose import JWTError, jwt
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from auth.models import User
+from auth.schemas import TokenData
+from config.settings import settings
+from db.connection import get_db
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from auth.schemas import TokenData
+from db.connection import get_db
+from config.settings import settings
+from auth.models import User
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+    credentials_exception = HTTPException(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
