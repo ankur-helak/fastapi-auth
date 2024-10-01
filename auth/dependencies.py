@@ -11,6 +11,17 @@ from sqlalchemy.future import select
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+    """Retrieves the current authenticated user from the JWT token and the database.
+    Parameters:
+        - token (str): The OAuth2 token used for authentication via dependency injection.
+        - db (AsyncSession): The database session used to query the user information via dependency injection.
+    Returns:
+        - User: The user object retrieved from the database matching the email in the token data.
+    Processing Logic:
+        - Decodes the JWT token to extract the user email (subject of the token).
+        - Validates that the extracted email is not None; otherwise, raises an HTTP 401 exception.
+        - Queries the database for a user with the extracted email and fetches the first result.
+        - Raises an HTTP 401 exception if the user is not found."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
