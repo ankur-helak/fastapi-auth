@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            background-color: #34d399;
+            cursor: default;
+        }
+        .card-back, .card-front {
+            position: absolute;
+            backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div id="welcome-screen" class="text-center">
+        <h1 class="text-4xl font-bold mb-4">Memory Match Challenge</h1>
+        <p class="mb-4">Flip the cards to find matching pairs. Select a difficulty level to start the game.</p>
+        <div class="space-x-4">
+            <button onclick="startGame('easy')" class="bg-blue-500 text-white px-4 py-2 rounded">Easy</button>
+            <button onclick="startGame('medium')" class="bg-blue-500 text-white px-4 py-2 rounded">Medium</button>
+            <button onclick="startGame('hard')" class="bg-blue-500 text-white px-4 py-2 rounded">Hard</button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Memory Match Challenge</h2>
+            <div>
+                <span id="timer">Time: 0s</span>
+                <span id="attempts">Attempts: 0</span>
+            </div>
+            <div>
+                <button onclick="restartGame()" class="bg-yellow-500 text-white px-4 py-2 rounded">Restart</button>
+                <button onclick="showWelcomeScreen()" class="bg-red-500 text-white px-4 py-2 rounded">Back</button>
+            </div>
+        </div>
+        <div id="game-grid" class="grid gap-4"></div>
+    </div>
+
+    <div id="end-game-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center">
+        <div class="bg-white p-8 rounded text-center">
+            <h2 class="text-2xl font-bold mb-4">Congratulations!</h2>
+            <p id="end-game-message" class="mb-4"></p>
+            <button onclick="restartGame()" class="bg-green-500 text-white px-4 py-2 rounded">Play Again</button>
+            <button onclick="showWelcomeScreen()" class="bg-blue-500 text-white px-4 py-2 rounded">Change Difficulty</button>
+        </div>
+    </div>
+
+    <script>
+        const cardIcons = ['🍎', '🍌', '🍇', '🍉', '🍓', '🍒', '🍍', '🥝', '🥥', '🍑', '🍋', '🍊'];
+        let gridSize, cardPairs, cards, flippedCards, matchedPairs, attempts, timer, timerInterval;
+
+        function startGame(difficulty) {
+            const difficulties = {
+                easy: { gridSize: [4, 2], pairs: 4 },
+                medium: { gridSize: [4, 4], pairs: 8 },
+                hard: { gridSize: [6, 4], pairs: 12 }
+            };
+            ({ gridSize, cardPairs } = difficulties[difficulty]);
+            cards = [];
+            flippedCards = [];
+            matchedPairs = 0;
+            attempts = 0;
+            timer = 0;
+            document.getElementById('attempts').textContent = `Attempts: ${attempts}`;
+            document.getElementById('timer').textContent = `Time: ${timer}s`;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timer++;
+                document.getElementById('timer').textContent = `Time: ${timer}s`;
+            }, 1000);
+            generateCards();
+            showGameScreen();
+        }
+
+        function generateCards() {
+            const selectedIcons = cardIcons.slice(0, cardPairs);
+            const cardSet = [...selectedIcons, ...selectedIcons];
+            cardSet.sort(() => Math.random() - 0.5);
+            const gameGrid = document.getElementById('game-grid');
+            gameGrid.style.gridTemplateColumns = `repeat(${gridSize[0]}, 1fr)`;
+            gameGrid.innerHTML = '';
+            cardSet.forEach(icon => {
+                const card = document.createElement('div');
+                card.className = 'card relative';
+                card.innerHTML = `
+                    <div class="card-front absolute inset-0 flex items-center justify-center">${icon}</div>
+                    <div class="card-back absolute inset-0 flex items-center justify-center bg-gray-400">?</div>
+                `;
+                card.addEventListener('click', () => flipCard(card, icon));
+                gameGrid.appendChild(card);
+                cards.push(card);
+            });
+        }
+
+        function flipCard(card, icon) {
+            if (flippedCards.length < 2 && !card.classList.contains('flipped') && !card.classList.contains('matched')) {
+                card.classList.add('flipped');
+                flippedCards.push({ card, icon });
+                if (flippedCards.length === 2) {
+                    attempts++;
+                    document.getElementById('attempts').textContent = `Attempts: ${attempts}`;
+                    checkMatch();
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [first, second] = flippedCards;
+            if (first.icon === second.icon) {
+                first.card.classList.add('matched');
+                second.card.classList.add('matched');
+                matchedPairs++;
+                if (matchedPairs === cardPairs) {
+                    endGame();
+                }
+            } else {
+                setTimeout(() => {
+                    first.card.classList.remove('flipped');
+                    second.card.classList.remove('flipped');
+                }, 1000);
+            }
+            flippedCards = [];
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            document.getElementById('end-game-message').textContent = `You completed the game in ${timer} seconds with ${attempts} attempts!`;
+            document.getElementById('end-game-modal').classList.remove('hidden');
+        }
+
+        function showGameScreen() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+        }
+
+        function showWelcomeScreen() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('end-game-modal').classList.add('hidden');
+            document.getElementById('welcome-screen').classList.remove('hidden');
+            clearInterval(timerInterval);
+        }
+
+        function restartGame() {
+            document.getElementById('end-game-modal').classList.add('hidden');
+            startGame(gridSize[0] === 4 && gridSize[1] === 2 ? 'easy' : gridSize[0] === 4 ? 'medium' : 'hard');
+        }
+    </script>
+</body>
+</html>

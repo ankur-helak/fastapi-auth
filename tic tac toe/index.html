@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f3f4f6;
+        }
+        #game {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            width: 16rem;
+            height: 16rem;
+        }
+        #game div {
+            border: 1px solid #cbd5e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #game div:hover {
+            background-color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center h-screen space-y-4">
+    <h1 class="text-3xl font-bold mb-4">Tic Tac Toe</h1>
+    <div class="flex items-center space-x-2">
+        <label for="difficulty" class="text-lg">Difficulty:</label>
+        <select id="difficulty" class="border border-gray-400 rounded p-1">
+            <option value="easy">Easy</option>
+            <option value="hard">Hard</option>
+        </select>
+    </div>
+    <div id="game">
+        <!-- Cells will be dynamically generated here -->
+    </div>
+    <script src="./main.js"></script>
+</body>
+</html>

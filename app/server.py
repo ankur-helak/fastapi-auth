@@ -17,24 +17,25 @@ def make_middleware() -> list[Middleware]:
     ]
     return middleware
 
+from fastapi import FastAPI
+
+def create_app():
+    app = FastAPI()
+    
+    # Middleware setup
+    @app.middleware("http")
+    async def add_process_time_header(request, call_next):
+        response = await call_next(request)
+        response.headers['X-Process-Time'] = str(process_time)
+        return response
+
+    # Include your routes here
+    # app.include_router(your_router)
+
+    return app
+
+app = create_app()
 
 def init_routers(app_: FastAPI) -> None:
     app_.include_router(auth_router)
 
-
-def create_app() -> FastAPI:
-    app_ = FastAPI(
-        title="Auth",
-        description="Authentication APIs",
-        version="1.0.0",
-        middleware=make_middleware(),
-    )
-    init_routers(app_=app_)
-    
-    @app_.on_event("startup")
-    async def startup_event():
-        await init_db()
-    return app_
-
-
-app = create_app()

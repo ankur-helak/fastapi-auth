@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Animations for Drawing O */
+        @keyframes drawO {
+            from { stroke-dashoffset: 100; }
+            to { stroke-dashoffset: 0; }
+        }
+        .animate-o {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: drawO 2s linear forwards;
+        }
+
+        /* Highlight Selected Difficulty */
+        .selected {
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5); /* Blue glow */
+        }
+
+        /* Additional Aesthetic Enhancements */
+        .cell {
+            transition: background-color 0.3s ease;
+        }
+        .cell:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-200 to-purple-300">
+    <!-- Tic Tac Toe Game Container -->
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+        <h1 class="text-3xl font-extrabold mb-6 text-center text-gray-800">Tic Tac Toe</h1>
+        
+        <!-- Difficulty Selection -->
+        <div class="mb-6 flex justify-center space-x-4">
+            <button id="easy-button" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">
+                Easy
+            </button>
+            <button id="medium-button" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                Medium
+            </button>
+            <button id="hard-button" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">
+                Hard
+            </button>
+        </div>
+
+        <!-- Game Board -->
+        <div id="game-board" class="grid grid-cols-3 gap-4">
+            <!-- 9 Cells -->
+            <div class="cell w-24 h-24 border-4 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50"></div>
+            <div class="cell w-24 h-24 border-4 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50"></div>
+            <div class="cell w-24 h-24 border-4 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50"></div>
+            <div class="cell w-24 h-24 border-4 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50"></div>
+            <div class="cell w-24 h-24 border-4 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50"></div>
+            <div class="cell w-24 h-24 border-4 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50"></div>
+            <div class="cell w-24 h-24 border-4 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50"></div>
+            <div class="cell w-24 h-24 border-4 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50"></div>
+            <div class="cell w-24 h-24 border-4 border-gray-300 flex items-center justify-center cursor-pointer bg-gray-50"></div>
+        </div>
+
+        <!-- Message Display -->
+        <div id="message" class="mt-6 text-center text-2xl font-semibold text-gray-700"></div>
+
+        <!-- Reset Button -->
+        <button id="reset-button" class="mt-6 px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 hidden">
+            Reset Game
+        </button>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Sound effect placeholders
+        const soundX = new Audio('x-sound.mp3'); // Replace with your X sound file path
+        const soundO = new Audio('o-sound.mp3'); // Replace with your O sound file path
+
+        const cells = document.querySelectorAll('.cell');
+        const message = document.getElementById('message');
+        const resetButton = document.getElementById('reset-button');
+        const easyButton = document.getElementById('easy-button');
+        const mediumButton = document.getElementById('medium-button');
+        const hardButton = document.getElementById('hard-button');
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let difficulty = 'easy'; // Default difficulty
+        const winningCombinations = [
+            [0,1,2], [3,4,5], [6,7,8],
+            [0,3,6], [1,4,7], [2,5,8],
+            [0,4,8], [2,4,6]
+        ];
+
+        // Initialize game
+        cells.forEach((cell, index) => {
+            cell.addEventListener('click', () => handleCellClick(index));
+        });
+
+        resetButton.addEventListener('click', resetGame);
+        easyButton.addEventListener('click', () => setDifficulty('easy'));
+        mediumButton.addEventListener('click', () => setDifficulty('medium'));
+        hardButton.addEventListener('click', () => setDifficulty('hard'));
+
+        function setDifficulty(level) {
+            difficulty = level;
+            message.textContent = `Difficulty set to ${capitalize(level)}`;
+            highlightSelectedDifficulty();
+            resetGame();
+        }
+
+        function capitalize(word) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }
+
+        function highlightSelectedDifficulty() {
+            // Remove 'selected' class from all buttons
+            [easyButton, mediumButton, hardButton].forEach(button => {
+                button.classList.remove('selected');
+            });
+
+            // Add 'selected' class to the active difficulty button
+            if (difficulty === 'easy') {
+                easyButton.classList.add('selected');
+            } else if (difficulty === 'medium') {
+                mediumButton.classList.add('selected');
+            } else if (difficulty === 'hard') {
+                hardButton.classList.add('selected');
+            }
+        }
+
+        function handleCellClick(index) {
+            if (cells[index].innerHTML !== '' || !gameActive) return;
+
+            placeSymbol(cells[index], currentPlayer);
+            playSound(currentPlayer);
+            disableBoard();
+
+            setTimeout(() => {
+                if (checkWin(currentPlayer)) {
+                    message.textContent = `${currentPlayer} Wins!`;
+                    gameActive = false;
+                    resetButton.classList.remove('hidden');
+                    return;
+                }
+                if (isDraw()) {
+                    message.textContent = `It's a Draw!`;
+                    gameActive = false;
+                    resetButton.classList.remove('hidden');
+                    return;
+                }
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                if (currentPlayer === 'O') {
+                    cpuMove();
+                } else {
+                    enableBoard();
+                }
+            }, 2000); // 2-second delay
+        }
+
+        function placeSymbol(cell, player) {
+            // Add symbol based on player
+            if (player === 'X') {
+                // X appears immediately without animation
+                cell.innerHTML = `
+                    <svg width="60" height="60" viewBox="0 0 50 50">
+                        <line x1="10" y1="10" x2="40" y2="40" stroke="red" stroke-width="5"/>
+                        <line x1="40" y1="10" x2="10" y2="40" stroke="red" stroke-width="5"/>
+                    </svg>
+                `;
+            } else {
+                // O is drawn with animation
+                cell.innerHTML = `
+                    <svg width="60" height="60" viewBox="0 0 50 50">
+                        <circle cx="25" cy="25" r="15" stroke="blue" stroke-width="5" fill="none" class="animate-o"/>
+                    </svg>
+                `;
+            }
+        }
+
+        function playSound(player) {
+            if (player === 'X') {
+                soundX.currentTime = 0;
+                soundX.play();
+            } else {
+                soundO.currentTime = 0;
+                soundO.play();
+            }
+        }
+
+        function disableBoard() {
+            cells.forEach(cell => {
+                cell.classList.add('pointer-events-none');
+            });
+        }
+
+        function enableBoard() {
+            cells.forEach(cell => {
+                if (cell.innerHTML === '') {
+                    cell.classList.remove('pointer-events-none');
+                }
+            });
+        }
+
+        function cpuMove() {
+            let index;
+            if (difficulty === 'easy') {
+                index = getRandomMove();
+            } else if (difficulty === 'medium') {
+                index = getMediumMove();
+            } else if (difficulty === 'hard') {
+                index = getBestMove();
+            }
+
+            if (index !== undefined && cells[index].innerHTML === '') {
+                handleCellClick(index);
+            }
+        }
+
+        function getRandomMove() {
+            const emptyCells = [];
+            cells.forEach((cell, idx) => {
+                if (cell.innerHTML === '') emptyCells.push(idx);
+            });
+            if (emptyCells.length === 0) return;
+            return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+
+        function getMediumMove() {
+            // Attempt to win or block
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                const cellsContent = [cells[a].innerHTML, cells[b].innerHTML, cells[c].innerHTML];
+                const playerSymbols = cellsContent.map(content => content.includes('animate-x') ? 'X' : content.includes('animate-o') ? 'O' : '');
+
+                // Check if CPU can win
+                if (playerSymbols.filter(sym => sym === 'O').length === 2 && playerSymbols.includes('')) {
+                    return combo[playerSymbols.indexOf('')];
+                }
+
+                // Check if player can win and block
+                if (playerSymbols.filter(sym => sym === 'X').length === 2 && playerSymbols.includes('')) {
+                    return combo[playerSymbols.indexOf('')];
+                }
+            }
+            // Else random
+            return getRandomMove();
+        }
+
+        function getBestMove() {
+            let bestScore = -Infinity;
+            let move;
+            for (let i = 0; i < cells.length; i++) {
+                if (cells[i].innerHTML === '') {
+                    // Simulate move
+                    cells[i].innerHTML = '<svg width="60" height="60" viewBox="0 0 50 50"><circle cx="25" cy="25" r="15" stroke="blue" stroke-width="5" fill="none" class="animate-o"/></svg>';
+                    let score = minimax(false);
+                    // Undo move
+                    cells[i].innerHTML = '';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+            return move;
+        }
+
+        const scores = {
+            'O': 1,
+            'X': -1,
+            'draw': 0
+        };
+
+        function minimax(isMaximizing) {
+            let result = checkWinnerInternal();
+            if (result !== null) {
+                return scores[result];
+            }
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < cells.length; i++) {
+                    if (cells[i].innerHTML === '') {
+                        // Simulate move
+                        cells[i].innerHTML = '<svg width="60" height="60" viewBox="0 0 50 50"><circle cx="25" cy="25" r="15" stroke="blue" stroke-width="5" fill="none" class="animate-o"/></svg>';
+                        let score = minimax(false);
+                        // Undo move
+                        cells[i].innerHTML = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < cells.length; i++) {
+                    if (cells[i].innerHTML === '') {
+                        // Simulate move
+                        cells[i].innerHTML = `
+                            <svg width="60" height="60" viewBox="0 0 50 50">
+                                <line x1="10" y1="10" x2="40" y2="40" stroke="red" stroke-width="5"/>
+                                <line x1="40" y1="10" x2="10" y2="40" stroke="red" stroke-width="5"/>
+                            </svg>
+                        `;
+                        let score = minimax(true);
+                        // Undo move
+                        cells[i].innerHTML = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function checkWinnerInternal() {
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                const cellA = cells[a].innerHTML.includes('animate-x') ? 'X' : cells[a].innerHTML.includes('animate-o') ? 'O' : '';
+                const cellB = cells[b].innerHTML.includes('animate-x') ? 'X' : cells[b].innerHTML.includes('animate-o') ? 'O' : '';
+                const cellC = cells[c].innerHTML.includes('animate-x') ? 'X' : cells[c].innerHTML.includes('animate-o') ? 'O' : '';
+
+                if (cellA && cellA === cellB && cellA === cellC) {
+                    return cellA;
+                }
+            }
+
+            if ([...cells].every(cell => cell.innerHTML !== '')) {
+                return 'draw';
+            }
+
+            return null;
+        }
+
+        function checkWin(player) {
+            return winningCombinations.some(combination => {
+                return combination.every(index => {
+                    if (player === 'X') {
+                        return cells[index].innerHTML.includes('<line');
+                    } else {
+                        return cells[index].innerHTML.includes('animate-o');
+                    }
+                });
+            });
+        }
+
+        function isDraw() {
+            return [...cells].every(cell => cell.innerHTML !== '');
+        }
+
+        function resetGame() {
+            cells.forEach(cell => {
+                cell.innerHTML = '';
+                cell.classList.remove('text-red-500', 'text-blue-500');
+            });
+            message.textContent = '';
+            gameActive = true;
+            resetButton.classList.add('hidden');
+            enableBoard();
+            currentPlayer = 'X';
+        }
+
+        // Initialize default difficulty highlight
+        highlightSelectedDifficulty();
+    </script>
+</body>
+</html>

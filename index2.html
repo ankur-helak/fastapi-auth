@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fff 50%, #b3b3ff 50%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+        .form-container h2 {
+            margin-bottom: 20px;
+        }
+        .input-container {
+            position: relative;
+            margin: 10px 20px 10px 0; /* Increased right margin */
+        }
+        .input-container i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 10px 10px 10px 30px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 25px;
+            background: #b3b3ff;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .form-container button:hover {
+            background: #a3a3ff;
+        }
+        .form-container a {
+            display: block;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 25px;
+            background: #b3b3ff;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .form-container a:hover {
+            background: #a3a3ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Login</h2>
+        <div class="input-container">
+            <i class="fas fa-envelope"></i>
+            <input type="email" placeholder="email address" required>
+        </div>
+        <div class="input-container">
+            <i class="fas fa-lock"></i>
+            <input type="password" placeholder="password" required>
+        </div>
+        <button>LOGIN</button>
+        <a href="#">Sign Up</a>
+    </div>
+</body>
+</html>

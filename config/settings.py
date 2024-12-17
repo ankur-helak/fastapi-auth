@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
 
-class Settings(BaseSettings):
+class Setting(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
     secret_key: str = "oGZGMadkunyMgtSxgV8dFg2UWkaqxYUvopvsvK7axrm61UekefE7mQrhQLJTt37E"

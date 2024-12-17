@@ -1,0 +1,80 @@
+{
+    "parameters": [
+        {
+            "name": "type",
+            "meta": {
+                "displayName": "Authentication Type",
+                "displayType": "select",
+                "placeholder": "Select an authentication type",
+                "description": "Choose the type of authentication you want to use.",
+                "options": [
+                    {
+                        "label": "Bearer Token",
+                        "value": "bearer_token"
+                    }
+                ],
+                "validation": {
+                    "required": true
+                }
+            }
+        }
+    ],
+    "bearer_token": {
+        "parameters": [
+            {
+                "name": "api_token",
+                "meta": {
+                    "displayName": "API token",
+                    "displayType": "password",
+                    "placeholder": "Enter API token",
+                    "description": "Your xAI API Key. Refer to the Quickstart guide for details.",
+                    "validation": {
+                        "required": true
+                    },
+                    "dependencies": {
+                        "conditions": [
+                            {
+                                "field": "type",
+                                "operator": "EQUALS",
+                                "value": "bearer_token"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "validate": {
+            "url": "https://api.x.ai/v1/chat/completions",
+            "method": "post",
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {{secrets.api_token}}"
+            },
+            "body": {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are Grok, a chatbot inspired by the Hitchhikers Guide to the Galaxy."
+                    },
+                    {
+                        "role": "user",
+                        "content": "What is the answer to life and universe?"
+                    }
+                ],
+                "model": "grok-beta",
+                "stream": false,
+                "temperature": 0
+            },
+            "response": {
+                "output": "{{response.data}}",
+                "error": {
+                    "message": "{{response.data.message}}",
+                    "code": "{{response.status}}"
+                }
+            },
+            "log": {
+                "sanitize": ["request.headers.Authorization"]
+            }
+        }
+    }
+}
