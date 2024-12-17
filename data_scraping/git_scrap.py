@@ -8,7 +8,7 @@ rules_path = "rules"  # Path to the "rules" folder
 # Replace with your Personal Access Token
 headers = {
     "Accept": "application/vnd.github.v3+json",
-    "Authorization": "token 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"  # Add your PAT here
+    "Authorization": "token "  # Add your PAT here
 }
 
 # Function to fetch directory contents from the GitHub API
